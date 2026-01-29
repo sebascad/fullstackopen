@@ -9,11 +9,9 @@ const StatisticLine = ({text,value}) => {
     <td>{text}</td>
     <td>{value}</td>
   </tr>
-)
+  )
 }
   
-  
-
 const Statistics = ({good,neutral,bad}) => {
     const total = good+neutral+bad
     if(total === 0){
@@ -22,7 +20,7 @@ const Statistics = ({good,neutral,bad}) => {
         <Header title={"statistics"} />
         <p>No Feedback Given</p>
       </div>
-    )
+      )
     }
 
     return (
