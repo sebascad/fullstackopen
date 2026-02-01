@@ -1,5 +1,7 @@
 import { useState , useEffect} from 'react'
 import personService from './services/persons'
+import SuccessNotification from './components/SuccessNotification'
+import ErrorNotification from './components/ErrorNotification'
 
 const Filter = ({filter,filterByName}) => <p>filter shown with <input value={filter} onChange={filterByName}/> </p>
 
@@ -34,6 +36,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber,setNewNumber] = useState("")
   const [filter,setFilter] = useState("")
+  const [successMessage,setSuccessMessage] = useState(null)
+  const [errorMessage,setErrorMessage] = useState(null)
 
   const personAlreadyExists = (name) => persons.some(person => person.name === name)
   const personsToShow = persons.filter(person => person.name.toLowerCase().includes(filter.toLowerCase()))
@@ -57,9 +61,15 @@ const App = () => {
         personService.changeNumber(updatedPerson)
           .then(response => {
             setPersons(persons.map(person => person.name === newName ? response.data : person))
+            setSuccessMessage(`Changed ${person.name}'s number`)
             setNewName("")
             setNewNumber("")
           })
+          .catch(error => {
+            setErrorMessage(`Information of ${person.name} has been deleted from the server`)
+            setPersons(persons.filter(person => person.name !== updatedPerson.name))
+          })
+        
       }
   }
 
@@ -75,7 +85,8 @@ const App = () => {
         setPersons(persons.concat(response.data))
         setNewName("")
         setNewNumber("")
-        })
+        setSuccessMessage(`Added ${newPerson.name}`)
+      })
   }
 
   const deletePerson = (id) => {
@@ -110,6 +121,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <ErrorNotification message={errorMessage}/>
+      <SuccessNotification message={successMessage}/>
       <Filter filter={filter} filterByName={filterByName}/>
 
       <h3>add a new:</h3>
