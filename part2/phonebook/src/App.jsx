@@ -88,7 +88,7 @@ const App = () => {
         setSuccessMessage(`Added ${newPerson.name}`)
       })
   }
-
+  
   const deletePerson = (id) => {
     const person = persons.find((person) => person.id === id)
 
