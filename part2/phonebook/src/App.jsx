@@ -66,8 +66,10 @@ const App = () => {
             setNewNumber("")
           })
           .catch(error => {
-            setErrorMessage(`Information of ${person.name} has been deleted from the server`)
-            setPersons(persons.filter(person => person.name !== updatedPerson.name))
+            setErrorMessage(error.response.data.error)
+            if (error.response.status === 404){
+              setPersons(persons.filter(person => person.name !== updatedPerson.name))
+            }
           })
         
       }
@@ -86,6 +88,9 @@ const App = () => {
         setNewName("")
         setNewNumber("")
         setSuccessMessage(`Added ${newPerson.name}`)
+      })
+      .catch(error =>{
+        setErrorMessage(error.response.data.error)
       })
   }
   
