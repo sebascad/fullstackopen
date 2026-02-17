@@ -63,7 +63,7 @@ describe('get requests', () => {
   })
 
   test('fails with statuscode 404 if note does not exist', async () => {
-    const validNonexistingId = '2'
+    const validNonexistingId = '507f1f77bcf86cd799439011'
 
     await api.get(`/api/blogs/${validNonexistingId}`).expect(404)
   })
@@ -130,6 +130,65 @@ describe('post requests', () => {
   })
 })
 
+describe('delete requests',() => {
+  test('when a blog is deleted, size decreases by one', async () => {
+    const blogs = await api.get('/api/blogs')
+    const blogToDeleteID = blogs.body[0].id
+
+    await api.delete(`/api/blogs/${blogToDeleteID}`)
+      .expect(204)
+
+    const blogsAfterDeletion = await api.get('/api/blogs')
+
+    assert.strictEqual(blogsAfterDeletion.body.length,blogs.body.length - 1)
+  })
+
+  test('if the id is invalid, it shows an appropiate status code', async () => {
+    await api.delete('/api/blogs/2')
+      .expect(400)
+  })
+
+  test('if the id doesnt exists, size doesnt vary', async () => {
+    const blogs = await api.get('/api/blogs')
+    const validNonexistingId = '507f1f77bcf86cd799439011'
+
+    await api.delete(`/api/blogs/${validNonexistingId}`)
+      .expect(204)
+
+    const blogsAfterDeletion = await api.get('/api/blogs')
+
+    assert.strictEqual(blogsAfterDeletion.body.length,blogs.body.length)
+  })
+})
+
+describe('update requests',() => {
+  test('when a blog is updated, size doesnt vary', async () => {
+    const blogs = await api.get('/api/blogs')
+    const blogToUpdateID = blogs.body[0].id
+
+    await api.put(`/api/blogs/${blogToUpdateID}`)
+      .send({ title: 'Updated title', url: 'updated.com' })
+      .expect(200)
+
+    const blogsAfterUpdate= await api.get('/api/blogs')
+
+    assert.strictEqual(blogsAfterUpdate.body.length,blogs.body.length)
+  })
+
+  test('if the id is invalid, it shows an appropiate status code', async () => {
+    await api.put('/api/blogs/2')
+      .send({ title: 'Updated title', url: 'updated.com' })
+      .expect(400)
+  })
+
+  test('if the id doesnt exists, expect 404 error code', async () => {
+    const validNonexistingId = '507f1f77bcf86cd799439011'
+
+    await api.put(`/api/blogs/${validNonexistingId}`)
+      .send({ title: 'Updated title', url: 'updated.com' })
+      .expect(404)
+  })
+})
 after(async () => {
   await mongoose.connection.close()
 })
