@@ -1,9 +1,8 @@
-POST http://localhost:3003/api/blogs/ HTTP/1.1
+POST http://localhost:3003/api/blogs HTTP/1.1
 content-type: application/json
 
 {
-    "title": "hola hola",
-    "author": "Pepe Perez",
-    "url": "www.hola.es",
-    "likes": 2
+    "title": "linea",
+    "author": "luchilu",
+    "url": "yo.com"
 }
