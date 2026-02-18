@@ -1,8 +1,28 @@
-POST http://localhost:3003/api/blogs HTTP/1.1
+POST http://localhost:3003/api/users HTTP/1.1
 content-type: application/json
 
 {
-    "title": "Hola",
-    "author": "sisi",
-    "url": "muchobetis.es"
+    "name": "adios",
+    "username": "hola",
+    "password": "secret"
+}
+
+###
+POST http://localhost:3003/api/login HTTP/1.1
+content-type: application/json
+
+{
+    "username": "hola",
+    "password": "secret"
+}
+
+###
+POST http://localhost:3003/api/blogs HTTP/1.1
+content-type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImhvbGEiLCJpZCI6IjY5OTYyNDY5NjZkYjNhZDQ3Zjg0NDRhZCIsImlhdCI6MTc3MTQ0NzgyM30.u62uzn1GkZaOdzDaKVyyJdybqdK-FROeiq1-cmIl-cc
+
+{
+    "title": "prueba",
+    "author": "Hola. Sr",
+    "url": "hola.es"
 }
