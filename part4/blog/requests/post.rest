@@ -2,7 +2,7 @@ POST http://localhost:3003/api/blogs HTTP/1.1
 content-type: application/json
 
 {
-    "title": "linea",
-    "author": "luchilu",
-    "url": "yo.com"
+    "title": "Hola",
+    "author": "sisi",
+    "url": "muchobetis.es"
 }

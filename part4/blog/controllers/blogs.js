@@ -9,7 +9,8 @@ blogRouter.get('/', async (request, response) => {
 
 blogRouter.get('/:id', async (request,response,next) => {
   try{
-    const blog = await Blog.findById(request.params.id)
+    const blog = await Blog.
+      findById(request.params.id).populate('users')
 
     if(!blog) return response.status(404).end()
 
@@ -30,7 +31,7 @@ blogRouter.post('/', async (request, response) => {
     url: body.url,
     title: body.title,
     author: body.author,
-    user: user.id
+    users: user.id
   })
 
   const savedBlog = await blog.save()
