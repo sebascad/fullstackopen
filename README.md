@@ -1,19 +1,31 @@
-# example-submission-repository
+# Full Stack Open - Course Submissions
 
+## 📚 Parts Overview
 
-You may submit all the exercises of this course into the same repository, or use multiple repositories. If you submit exercises of different parts into the same repository, please use a sensible naming scheme for the directories.
+| Part | Topic | Projects |
+|------|-------|----------|
+| **0** | Fundamentals of Web Apps | - |
+| **1** | Introduction to React | courseinfo, unicafe, anecdotes |
+| **2** | Communicating with Server | courseinfo, phonebook, countries |
+| **3** | Programming a Server with Node.js & Express | phonebook |
+| **4** | Testing & User Administration | blog |
 
-One very functional file structure for the submission repository is as follows:
+## 📁 Directory Structure
 
-<pre>
-part0
-part1
-  courseinfo
-  unicafe
-  anecdotes
-part2
-  phonebook
-  countries
-</pre>
+```
+part0/           Fundamentals & web app diagrams
+part1/           React basics & hooks
+  ├── courseinfo/
+  ├── unicafe/
+  └── anecdotes/
+part2/           Server communication & HTTP requests
+  ├── courseinfo/
+  ├── phonebook/
+  └── countries/
+part3/           Node.js & Express backend
+  └── phonebook/
+part4/           Testing & authentication
+  └── blog/
+```
 
-Put the whole react repository of the project to each folder except the folder <i>node_modules</i>
+Each project folder contains the complete application files (excluding `node_modules`)
