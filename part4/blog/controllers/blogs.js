@@ -1,8 +1,5 @@
 const blogRouter = require('express').Router()
-const jwt = require('jsonwebtoken')
-
 const Blog = require('../models/blog')
-const User = require('../models/user')
 
 blogRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({})
@@ -23,46 +20,44 @@ blogRouter.get('/:id', async (request,response,next) => {
   }
 })
 
-blogRouter.post('/', async (request, response) => {
-  const body = request.body
-  if(!body.url || !body.title) return response.status(400).end()
+blogRouter.post('/',async (request, response, next) => {
+  try {
+    const body = request.body
+    if(!body.url || !body.title) return response.status(400).end()
 
-  const decodedToken = jwt.verify(request.token ,process.env.SECRET)
-  if(!decodedToken.id){
-    return response.status(401).json({ error: 'token invalid' })
+    const user = request.user
+    if(!user) return response.status(404).json({ error: 'No user found' })
+
+    const blog = new Blog({
+      url: body.url,
+      title: body.title,
+      author: body.author,
+      users: user._id
+    })
+
+    const savedBlog = await blog.save()
+
+    user.blogs = user.blogs.concat(savedBlog.id)
+    await user.save()
+
+    response.status(201).json(savedBlog)
+  } catch (error) {
+    next(error)
   }
-  const user = await User.findById(decodedToken.id)
-  if(!user) return response.status(404).json('No user found')
-
-  const blog = new Blog({
-    url: body.url,
-    title: body.title,
-    author: body.author,
-    users: user._id
-  })
-
-  const savedBlog = await blog.save()
-
-  user.blogs = user.blogs.concat(savedBlog.id)
-  await user.save()
-
-  response.status(201).json(savedBlog)
 })
 
 blogRouter.delete('/:id', async(request,response,next) => {
   try{
-    const decodedToken = jwt.verify(request.token ,process.env.SECRET)
-    if(!decodedToken.id) return response.status(401).json({ error: 'token invalid' })
-
-    const user = await User.findById(decodedToken.id)
+    const user = request.user
     const blog = await Blog.findById(request.params.id)
     if(!blog) return response.status(404).json({ error: 'blog not found' })
 
     if (user.id.toString() === blog.users.toString()){
       await Blog.findByIdAndDelete(request.params.id)
-
-      response.status(204).end()
+      return response.status(204).end()
     }
+
+    response.status(403).json({ error: 'not authorized to delete this blog' })
   }catch (error){
     next(error)
   }
