@@ -3,6 +3,8 @@ import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import Notification from './components/Notification'
+import LoginForm from './components/LoginForm'
+import BlogForm from './components/BlogForm'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
@@ -80,54 +82,34 @@ const App = () => {
     }
   }
   
-  const handleNewBlog = async (event) => {
+  const handleBlogChange = async (event) => {
     const {name, value} = event.target //When a field is submited, ex: title -> 'Hola'
     setNewBlog({...newBlog, [name]: value}) //only its value gets "updated"
   }
 
   const loginForm = () => {
     return(
-    <form onSubmit={handleLogin}>
       <div>
-        username 
-          <input
-            type='text' value={username} name='Username' onChange={({target}) => setUsername(target.value)}
-            />
+      <LoginForm
+        username={username}
+        password={password}
+        handleUsernameChange={({target}) => setUsername(target.value)}
+        handlePasswordChange={({target}) => setPassword(target.value)}
+        handleLogin={handleLogin}
+      />
       </div>
-      <div>
-        password 
-          <input
-            type='text' value={password} name='Password' onChange={({target}) => setPassword(target.value)}
-            />
-      </div>
-      <button type='submit'>login</button>
-    </form>
     )
   }
 
   const createNewBlogForm = () => {
     return(
-      <form onSubmit={handleCreateBlog}>
-          <div>
-            title
-              <input
-                type='text' value={newBlog.title} name='title' onChange={handleNewBlog}
-              />
-          </div>
-          <div>
-            author
-              <input
-                type='text' value={newBlog.author} name='author' onChange={handleNewBlog}
-              />
-          </div>
-          <div>
-            url
-              <input
-                type='text' value={newBlog.url} name='url' onChange={handleNewBlog}
-              />
-          </div>
-          <button type='submit'>send</button>
-      </form>
+      <BlogForm 
+        title={newBlog.title}
+        author={newBlog.author}
+        url={newBlog.url}
+        handleCreateBlog={handleCreateBlog}
+        handleBlogChange={handleBlogChange}
+      />
     )
   }
 
