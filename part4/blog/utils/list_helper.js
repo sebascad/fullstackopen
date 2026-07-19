@@ -1,48 +1,36 @@
 const _ = require('lodash')
+const { info } = require('./logger')
+const { auth } = require('googleapis/build/src/apis/abusiveexperiencereport')
 
-const dummy = () => {
+const dummy = (blogs) => {
   return 1
 }
 
 const totalLikes = (blogs) => {
-  return blogs.length === 0 ?
-    0 :
-    blogs.reduce((acc,blog) => acc + blog.likes ,0)
+  return blogs.reduce((acc,current) => acc + current.likes,0)
 }
 
 const favoriteBlog = (blogs) => {
-  return blogs.length === 0 ?
-    {} :
-    blogs.reduce((acc,blog) => acc.likes < blog.likes ? blog : acc)
+  if (blogs.length === 0) return null
+
+  return blogs.reduce((favorite, current) =>
+    current.likes > favorite.likes ? current : favorite
+  )
 }
 
 const mostBlogs = (blogs) => {
-  if (blogs.length === 0) return {}
+  if (blogs.length === 0) return null
 
-  const authors = _.groupBy(blogs, 'author')
-  const authorsArray = Object.entries(authors).map(([author, authorBlogs]) => ({
-    author,
-    blogs: authorBlogs.length
-  }))
-  return _.maxBy(authorsArray, 'blogs')
+  const count = _.countBy(blogs,'author')
+  console.log(count)
+
+  const topAuthor = _.maxBy(Object.keys(count), author => count[author])
+
+  return {
+    author: topAuthor,
+    blogs: count[topAuthor]
+  }
 }
 
-const mostLikes = (blogs) => {
-  if (blogs.length === 0) return 0
+module.exports = {dummy,totalLikes,favoriteBlog,mostBlogs}
 
-  const authors = _.groupBy(blogs, 'author')
-  const authorsArray = Object.entries(authors).map(([author, authorBlogs]) => ({
-    author,
-    likes: _.sumBy(authorBlogs,'likes')
-  }))
-
-  return _.maxBy(authorsArray, 'likes')
-}
-
-module.exports = {
-  dummy,
-  totalLikes,
-  favoriteBlog,
-  mostBlogs,
-  mostLikes
-}

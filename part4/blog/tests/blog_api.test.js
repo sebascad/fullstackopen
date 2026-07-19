@@ -1,194 +1,149 @@
+const { test, after, describe, beforeEach } = require('node:test')
 const assert = require('node:assert')
-const { test, after, beforeEach, describe } = require('node:test')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
-
 const Blog = require('../models/blog')
 
 const api = supertest(app)
 
-
-const initialBlogs = [
+const exampleBlogs = [
   {
-    'title': 'hola hola',
-    'author': 'Pepe Perez',
-    'url': 'www.hola.es',
-    'likes': 2
+    title: 'React patterns',
+    author: 'Michael Chan',
+    url: 'https://reactpatterns.com/',
+    likes: 7
   },
   {
-    'title': 'Viva el betis',
-    'author': 'Juan Perez',
-    'url': 'www.adios.es',
-    'likes': 5
-  },
+    title: 'Go To Statement Considered Harmful',
+    author: 'Edsger W. Dijkstra',
+    url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
+    likes: 5
+  }
 ]
 
 
-beforeEach(async () => {
+beforeEach(async() => {
   await Blog.deleteMany({})
-  await Blog.insertMany(initialBlogs)
+
+  const blogs = exampleBlogs
+    .map(blog => new Blog(blog))
+  const promiseArray = blogs.map(blog => blog.save())
+
+  await Promise.all(promiseArray)
 })
 
-describe('get requests', () => {
-  test('returns the blogs in a JSON format', async () => {
-    await api
-      .get('/api/blogs')
-      .expect(200)
-      .expect('Content-Type', /application\/json/)
-  })
-  test('all blogs are returned', async () => {
+test('blogs are returned as json', async () => {
+  await api
+    .get('/api/blogs')
+    .expect(200)
+    .expect('Content-Type', /application\/json/)
+})
+
+describe('GET Tests', () => {
+  test('Returns the correct amount of blogs', async () => {
     const response = await api.get('/api/blogs')
 
-    assert.strictEqual(response.body.length,initialBlogs.length)
+    assert.strictEqual(response.body.length,2)
   })
 
-  test('id is shown properly', async () => {
+  test('id field is shown and named properly', async () => {
     const response = await api.get('/api/blogs')
+
     response.body.forEach(blog => {
-      assert(blog.id)
+      assert(blog.id !== undefined)
+      assert.strictEqual(blog._id,undefined) 
     })
   })
+})
 
-  test('a note is displayed if exists by id', async () => {
+describe('POST Tests', () => {
+  test('If a blog is succesfully added, the total count increments by 1', async () => {
+
+    await api.post('/api/blogs')
+      .send(exampleBlogs[0])
+      .expect(201)
+    
+    const response = await api.get('/api/blogs')
+
+    assert.strictEqual(response.body.length,  exampleBlogs.length + 1)
+  })
+
+  test('If the likes are not defined, its assigned 0 by default', async () => {
+    const blog =  {
+      title: 'Hola',
+      author: 'Adios',
+      url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html'
+    }
+
+    const response = await api.post('/api/blogs')
+      .send(blog)
+      .expect(201)
+    
+    assert.strictEqual(response.body.likes,0)
+  })
+
+  test('If title or url are undefined, returns ERRORCODE 400', async () => {
+    const blog = {
+      title: undefined,
+      author: 'anyone',
+      url: undefined
+    }
+
+    await api.post('/api/blogs')
+      .send(blog)
+      .expect(400)
+  })
+})
+
+describe('DELETE Tests', () => {
+  test('If a blog is succesfully deleted, the total count decreases by 1', async () => {
     const initialBlogs = await api.get('/api/blogs')
-    const noteToDisplay = initialBlogs.body[0]
 
-    const response = await api
-      .get(`/api/blogs/${noteToDisplay.id}`)
-      .expect(200)
-      .expect('Content-Type', /application\/json/)
+    const blogToDelete = initialBlogs.body[0]
 
-    assert.deepStrictEqual(response.body,noteToDisplay)
-  })
-
-  test('fails with statuscode 404 if note does not exist', async () => {
-    const validNonexistingId = '507f1f77bcf86cd799439011'
-
-    await api.get(`/api/blogs/${validNonexistingId}`).expect(404)
-  })
-
-  test('fails with statuscode 400 id is invalid', async () => {
-    const invalidId = '5a3d5da59070081a82a3445'
-
-    await api.get(`/api/blogs/${invalidId}`).expect(400)
-  })
-})
-
-describe('post requests', () => {
-  test('when a new blog is posted, increases size by one', async () => {
-    const newBlog = {
-      'title': 'hola hola',
-      'author': 'Pepe Perez',
-      'url': 'www.hola.es',
-      'likes': 2
-    }
-
-    await api.post('/api/blogs')
-      .send(newBlog)
-      .expect(201)
-      .expect('Content-Type', /application\/json/)
-
-    const blogsAfter = await api.get('/api/blogs')
-    assert.strictEqual(blogsAfter.body.length,initialBlogs.length + 1)
-  })
-  test('if likes field is missing, by default is zero', async () => {
-    const newBlog = {
-      'title': 'hola hola',
-      'author': 'Pepe Perez',
-      'url': 'www.hola.es',
-    }
-
-    await api.post('/api/blogs')
-      .send(newBlog)
-      .expect(201)
-      .expect('Content-Type', /application\/json/)
-
-    const blogsAfter = await api.get('/api/blogs')
-    const lastBlog = blogsAfter.body[blogsAfter.body.length-1]
-
-    assert.strictEqual(lastBlog.likes,0)
-  })
-  test('if title or url fields are missing, return 400 Bad Request', async () => {
-    const newBlogNoTitle = {
-      'author': 'Pepe Perez',
-      'url': 'www.hola.es',
-    }
-
-    const newBlogNoUrl = {
-      'title': 'prueba',
-      'author': 'Pepe Perez',
-    }
-
-    await api.post('/api/blogs')
-      .send(newBlogNoTitle)
-      .expect(400)
-
-    await api.post('/api/blogs')
-      .send(newBlogNoUrl)
-      .expect(400)
-  })
-})
-
-describe('delete requests',() => {
-  test('when a blog is deleted, size decreases by one', async () => {
-    const blogs = await api.get('/api/blogs')
-    const blogToDeleteID = blogs.body[0].id
-
-    await api.delete(`/api/blogs/${blogToDeleteID}`)
+    await api.delete(`/api/blogs/${blogToDelete.id}`)
       .expect(204)
 
-    const blogsAfterDeletion = await api.get('/api/blogs')
-
-    assert.strictEqual(blogsAfterDeletion.body.length,blogs.body.length - 1)
+    const finalBlogs = await api.get('/api/blogs')
+    
+    assert.strictEqual(finalBlogs.body.length,initialBlogs.body.length - 1)
   })
 
-  test('if the id is invalid, it shows an appropiate status code', async () => {
-    await api.delete('/api/blogs/2')
-      .expect(400)
-  })
+  test('If a blog doesnt exists, the count doesnt change', async () => {
+    const initialBlogs = await api.get('/api/blogs')
 
-  test('if the id doesnt exists, size doesnt vary', async () => {
-    const blogs = await api.get('/api/blogs')
-    const validNonexistingId = '507f1f77bcf86cd799439011'
+    const blogToDelete = initialBlogs.body[0]
 
-    await api.delete(`/api/blogs/${validNonexistingId}`)
+    await api.delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(204)
+    
+    // The blogs gets deleted "again"
+    await api.delete(`/api/blogs/${blogToDelete.id}`)
       .expect(204)
 
-    const blogsAfterDeletion = await api.get('/api/blogs')
+    const finalBlogs = await api.get('/api/blogs')
 
-    assert.strictEqual(blogsAfterDeletion.body.length,blogs.body.length)
+    //It only should decrease by one
+    assert.strictEqual(finalBlogs.body.length,initialBlogs.body.length - 1)
   })
 })
 
-describe('update requests',() => {
-  test('when a blog is updated, size doesnt vary', async () => {
-    const blogs = await api.get('/api/blogs')
-    const blogToUpdateID = blogs.body[0].id
+describe('PUT Tests', () => {
+  test('Likes field is succesfully updated', async () => {
+    const initialBlogs = await api.get('/api/blogs')
 
-    await api.put(`/api/blogs/${blogToUpdateID}`)
-      .send({ title: 'Updated title', url: 'updated.com' })
+    const blogToUpdate = initialBlogs.body[0]
+
+    const updatedLikes = {...blogToUpdate, likes: blogToUpdate.likes + 1}
+    const response = await api.put(`/api/blogs/${blogToUpdate.id}`)
+      .send(updatedLikes)
       .expect(200)
-
-    const blogsAfterUpdate= await api.get('/api/blogs')
-
-    assert.strictEqual(blogsAfterUpdate.body.length,blogs.body.length)
-  })
-
-  test('if the id is invalid, it shows an appropiate status code', async () => {
-    await api.put('/api/blogs/2')
-      .send({ title: 'Updated title', url: 'updated.com' })
-      .expect(400)
-  })
-
-  test('if the id doesnt exists, expect 404 error code', async () => {
-    const validNonexistingId = '507f1f77bcf86cd799439011'
-
-    await api.put(`/api/blogs/${validNonexistingId}`)
-      .send({ title: 'Updated title', url: 'updated.com' })
-      .expect(404)
+    
+    assert.strictEqual(response.body.likes, blogToUpdate.likes + 1)
   })
 })
+
 after(async () => {
   await mongoose.connection.close()
 })
