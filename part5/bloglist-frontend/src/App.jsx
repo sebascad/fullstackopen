@@ -1,21 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import Notification from './components/Notification'
 import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
-
+import Togglable from './components/Togglable'
 const App = () => {
   const [blogs, setBlogs] = useState([])
-  const [username,setUsername] = useState('')
-  const [password,setPassword] = useState('')
+  const sortedBlogs = [...blogs].sort((a,b) => b.likes - a.likes)
+
   const [user,setUser] = useState(null)
-  const [newBlog,setNewBlog] = useState({
-    title: '',
-    author: '',
-    url: ''
-  })
 
   const [errorMessage, setErrorMessage] = useState(null)
   const [successMessage, setSuccessMessage] = useState(null)
@@ -35,9 +30,9 @@ const App = () => {
     }
   },[])
 
-  const handleLogin = async (event) => {
-    event.preventDefault()
+  const blogFormRef = useRef()
 
+  const handleLogin = async ({username,password}) => {
     try {
       const user = await loginService.login({username,password})
 
@@ -47,8 +42,6 @@ const App = () => {
 
       blogService.setToken(user.token)
       setUser(user)
-      setUsername('')
-      setPassword('')
     } catch{
       console.log("WRONG CREDENTIALS")
       setErrorMessage('wrong username or password')
@@ -58,22 +51,41 @@ const App = () => {
     }
   }
 
-  const handleLogout = async () => {
+  const handleLikes = async (id) => {
+    const blogToUpdate = blogs.find((blog) => blog.id === id)
+    const changedBlog = {...blogToUpdate, likes: blogToUpdate.likes + 1}
+
+    const updatedBlog = await blogService.update(changedBlog)
+    setBlogs(blogs.map((blog) => (blog.id !== id ? blog : updatedBlog)))
+  }
+
+  const handleRemoval = async (id) => {
+    try{
+      await blogService.remove(id)
+
+      setBlogs(blogs.filter((blog) => blog.id !== id))
+    }catch{
+      window.alert("YOU CANNOT DELETE A BLOG THAT YOU DONT OWN!")
+    }
+  }
+
+  const handleLogout = () => {
     window.localStorage.removeItem('loggedBlogappUser')
     setUser(null)
   }
 
-  const handleCreateBlog = async (event) => {
-    event.preventDefault()
+  const createBlog = async (blog) => {
     try{
-      const createdBlog = await blogService.create(newBlog)
+      blogFormRef.current.toggleVisibility()
+      
+      const createdBlog = await blogService.create(blog)
       setBlogs(blogs.concat(createdBlog))
-      setNewBlog({title: '',author: '',url: ''})
 
       setSuccessMessage(`a new blog ${createdBlog.title} by ${createdBlog.author} added`)
       setTimeout(() => {
         setSuccessMessage(null)
       },5000)
+
     }catch{
       setErrorMessage('blog creation failed')
       setTimeout(() => {
@@ -82,19 +94,10 @@ const App = () => {
     }
   }
   
-  const handleBlogChange = async (event) => {
-    const {name, value} = event.target //When a field is submited, ex: title -> 'Hola'
-    setNewBlog({...newBlog, [name]: value}) //only its value gets "updated"
-  }
-
   const loginForm = () => {
     return(
       <div>
       <LoginForm
-        username={username}
-        password={password}
-        handleUsernameChange={({target}) => setUsername(target.value)}
-        handlePasswordChange={({target}) => setPassword(target.value)}
         handleLogin={handleLogin}
       />
       </div>
@@ -103,13 +106,13 @@ const App = () => {
 
   const createNewBlogForm = () => {
     return(
-      <BlogForm 
-        title={newBlog.title}
-        author={newBlog.author}
-        url={newBlog.url}
-        handleCreateBlog={handleCreateBlog}
-        handleBlogChange={handleBlogChange}
-      />
+      <div>
+        <Togglable buttonLabel='new blog' ref={blogFormRef}>
+          <BlogForm 
+          createBlog ={createBlog}
+          />
+        </Togglable>
+      </div>
     )
   }
 
@@ -134,8 +137,8 @@ const App = () => {
           <h2>create new blog</h2>
           {createNewBlogForm()}
 
-          {blogs.map(blog =>
-            <Blog key={blog.id} blog={blog} />
+          {sortedBlogs.map(blog =>
+            <Blog key={blog.id} blog={blog} handleLikes={handleLikes} handleRemoval={handleRemoval}/>
           )}
           
         </div>
