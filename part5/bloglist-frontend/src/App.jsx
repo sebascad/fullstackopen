@@ -18,7 +18,7 @@ const App = () => {
   useEffect(() => {
     blogService.getAll().then(blogs =>
       setBlogs( blogs )
-    )  
+    )
   }, [])
 
   useEffect(() => {
@@ -32,9 +32,9 @@ const App = () => {
 
   const blogFormRef = useRef()
 
-  const handleLogin = async ({username,password}) => {
+  const handleLogin = async ({ username,password }) => {
     try {
-      const user = await loginService.login({username,password})
+      const user = await loginService.login({ username,password })
 
       window.localStorage.setItem(
         'loggedBlogappUser',JSON.stringify(user)
@@ -43,7 +43,7 @@ const App = () => {
       blogService.setToken(user.token)
       setUser(user)
     } catch{
-      console.log("WRONG CREDENTIALS")
+      console.log('WRONG CREDENTIALS')
       setErrorMessage('wrong username or password')
       setTimeout(() => {
         setErrorMessage(null)
@@ -53,7 +53,7 @@ const App = () => {
 
   const handleLikes = async (id) => {
     const blogToUpdate = blogs.find((blog) => blog.id === id)
-    const changedBlog = {...blogToUpdate, likes: blogToUpdate.likes + 1}
+    const changedBlog = { ...blogToUpdate, likes: blogToUpdate.likes + 1 }
 
     const updatedBlog = await blogService.update(changedBlog)
     setBlogs(blogs.map((blog) => (blog.id !== id ? blog : updatedBlog)))
@@ -65,7 +65,7 @@ const App = () => {
 
       setBlogs(blogs.filter((blog) => blog.id !== id))
     }catch{
-      window.alert("YOU CANNOT DELETE A BLOG THAT YOU DONT OWN!")
+      window.alert('YOU CANNOT DELETE A BLOG THAT YOU DONT OWN!')
     }
   }
 
@@ -77,7 +77,7 @@ const App = () => {
   const createBlog = async (blog) => {
     try{
       blogFormRef.current.toggleVisibility()
-      
+
       const createdBlog = await blogService.create(blog)
       setBlogs(blogs.concat(createdBlog))
 
@@ -93,13 +93,13 @@ const App = () => {
       },5000)
     }
   }
-  
+
   const loginForm = () => {
     return(
       <div>
-      <LoginForm
-        handleLogin={handleLogin}
-      />
+        <LoginForm
+          handleLogin={handleLogin}
+        />
       </div>
     )
   }
@@ -108,8 +108,8 @@ const App = () => {
     return(
       <div>
         <Togglable buttonLabel='new blog' ref={blogFormRef}>
-          <BlogForm 
-          createBlog ={createBlog}
+          <BlogForm
+            createBlog ={createBlog}
           />
         </Togglable>
       </div>
@@ -140,7 +140,7 @@ const App = () => {
           {sortedBlogs.map(blog =>
             <Blog key={blog.id} blog={blog} handleLikes={handleLikes} handleRemoval={handleRemoval}/>
           )}
-          
+
         </div>
       )}
 

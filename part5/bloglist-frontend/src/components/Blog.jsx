@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { useState } from 'react'
 
-const Blog = ({ blog , handleLikes , handleRemoval}) => {
+const Blog = ({ blog , handleLikes , handleRemoval }) => {
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -13,11 +13,11 @@ const Blog = ({ blog , handleLikes , handleRemoval}) => {
 
   const toggleDetails = () => setDetails(!details)
   const buttonText = details ? 'hide' : 'view' //Shows hide when details are shown
-  
+
   const onLike = () => {
     handleLikes(blog.id)
   }
-  
+
   const onRemoval = () => {
     window.alert(`Remove blog ${blog.title} by ${blog.author}?`)
     handleRemoval(blog.id)
@@ -27,7 +27,7 @@ const Blog = ({ blog , handleLikes , handleRemoval}) => {
     <div style={blogStyle}>
       <div>
         {blog.title} {blog.author}
-        <button onClick={toggleDetails}>{buttonText}</button> 
+        <button onClick={toggleDetails}>{buttonText}</button>
       </div>
       {details && (
         <div>
