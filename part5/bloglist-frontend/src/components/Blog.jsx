@@ -24,14 +24,14 @@ const Blog = ({ blog , handleLikes , handleRemoval }) => {
   }
 
   return(
-    <div style={blogStyle}>
+    <div style={blogStyle} className='blog'>
       <div>
         {blog.title} {blog.author}
         <button onClick={toggleDetails}>{buttonText}</button>
       </div>
       {details && (
         <div>
-          <div>{blog.url}</div>
+          <div className='url'>{blog.url}</div>
           <div>
             likes {blog.likes}
             <button onClick={onLike}>like</button>
