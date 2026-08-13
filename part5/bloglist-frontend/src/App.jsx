@@ -1,11 +1,20 @@
 import { useState, useEffect, useRef } from 'react'
-import Blog from './components/Blog'
 import blogService from './services/blogs'
 import loginService from './services/login'
+
+import {
+  BrowserRouter as Router,
+  Routes, Route, Link
+} from 'react-router-dom'
+
+import Blog from './components/Blog'
+import BlogList from './components/BlogList'
+
 import Notification from './components/Notification'
 import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
 import Togglable from './components/Togglable'
+
 const App = () => {
   const [blogs, setBlogs] = useState([])
   const sortedBlogs = [...blogs].sort((a,b) => b.likes - a.likes)
@@ -104,6 +113,15 @@ const App = () => {
     )
   }
 
+  const blogList = () => {
+    return(
+      <div>
+        <BlogList sortedBlogs={sortedBlogs} handleLikes={handleLikes}
+          handleRemoval={handleRemoval} user={user} />
+      </div>
+    )
+  }
+
   const createNewBlogForm = () => {
     return(
       <div>
@@ -116,36 +134,32 @@ const App = () => {
     )
   }
 
+  const padding = {
+    padding: 5
+  }
+
   return (
-    <div>
+    <Router>
+      <div>
+        <Link style={padding} to="/">Blogs</Link>
+        {!user ? (<Link style={padding} to= "/login">Login</Link>) :
+          <button onClick={handleLogout}> Logout </button> }
+      </div>
+
       <Notification message={errorMessage} type="error" />
       <Notification message={successMessage} type="success" />
 
-      {!user && (
-        <div>
-          <h1>log in to application</h1>
-          {loginForm()}
-        </div>
-      )}
+      <Routes>
+        <Route path="/" element = {
+          blogList()
+        } />
 
-      {user && (
-        <div>
-          <h2>blogs</h2>
-          <h4>{user.name} logged in</h4>
-          <button onClick={handleLogout}>logout</button>
+        <Route path="login" element = {
+          loginForm()
+        } />
 
-          <h2>create new blog</h2>
-          {createNewBlogForm()}
-
-          {sortedBlogs.map(blog =>
-            <Blog key={blog.id} blog={blog} handleLikes={handleLikes} handleRemoval={handleRemoval}
-              user={user}/>
-          )}
-
-        </div>
-      )}
-
-    </div>
+      </Routes>
+    </Router>
   )
 }
 
