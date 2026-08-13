@@ -85,8 +85,6 @@ const App = () => {
 
   const createBlog = async (blog) => {
     try{
-      blogFormRef.current.toggleVisibility()
-
       const createdBlog = await blogService.create(blog)
       setBlogs(blogs.concat(createdBlog))
 
@@ -125,11 +123,9 @@ const App = () => {
   const createNewBlogForm = () => {
     return(
       <div>
-        <Togglable buttonLabel='new blog' ref={blogFormRef}>
-          <BlogForm
-            createBlog ={createBlog}
-          />
-        </Togglable>
+        <BlogForm
+          createBlog ={createBlog}
+        />
       </div>
     )
   }
@@ -142,6 +138,8 @@ const App = () => {
     <Router>
       <div>
         <Link style={padding} to="/">Blogs</Link>
+
+        <Link style={padding} to={'/create'}>new blog </Link>
         {!user ? (<Link style={padding} to= "/login">Login</Link>) :
           <button onClick={handleLogout}> Logout </button> }
       </div>
@@ -156,6 +154,15 @@ const App = () => {
 
         <Route path="login" element = {
           loginForm()
+        } />
+
+        <Route path='/blogs/:id' element = {
+          <Blog blogs={blogs} handleLikes={handleLikes} handleRemoval={handleRemoval}
+            user={user}/>
+        } />
+
+        <Route path='/create' element = {
+          createNewBlogForm()
         } />
 
       </Routes>

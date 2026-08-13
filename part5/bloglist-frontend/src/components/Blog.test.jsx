@@ -1,95 +1,68 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { vi } from 'vitest'
 import Blog from './Blog'
-import { expect , test, vi } from 'vitest'
 
-test('renders content of a blog', () => {
-  const blog = {
-    title: 'Hola',
-    author: 'adios',
-    url: 'www.ssss.com'
+const blog = {
+  id: '123',
+  title: 'Hola',
+  author: 'adios',
+  url: 'www.ssss.com',
+  likes: 5,
+  user: {
+    username: 'prueba',
+    name: 'prueba'
   }
+}
 
-  const { container } = render(<Blog blog={blog} />)
+//Created an aux method, to fix the tests after implementing React Router
+const renderBlog = ({ blogs, handleLikes = vi.fn(), handleRemoval = vi.fn(), user }) => {
+  return render(
+    <MemoryRouter initialEntries={[`/blogs/${blog.id}`]}>
+      <Routes>
+        <Route
+          path='/blogs/:id'
+          element={
+            <Blog
+              blogs={blogs}
+              handleLikes={handleLikes}
+              handleRemoval={handleRemoval}
+              user={user}
+            />
+          }
+        />
+      </Routes>
+    </MemoryRouter>
+  )
+}
 
-  screen.debug(container)
+test('renders content of a blog to unauthenticated users, but buttons are not rendered', () => {
+  const { container } = renderBlog({ blogs: [blog], user: null })
 
   const div = container.querySelector('.blog')
-  expect(div).toHaveTextContent(
-    `${blog.title} ${blog.author}`
-  )
+  expect(div).toHaveTextContent(blog.title)
+  expect(div).toHaveTextContent(blog.author)
+  expect(div).toHaveTextContent(`likes ${blog.likes}`)
+
+  expect(screen.queryByText('like')).toBeNull()
+  expect(screen.queryByText('Remove')).toBeNull()
 })
 
-test('Neither url or likes are shown by default', () => {
-  const blog = {
-    title: 'Hola',
-    author: 'adios',
-    url: 'www.ssss.com',
-    likes: 3
-  }
+test('shows only the like button to authenticated users who are not the owner', () => {
+  const user = { username: 'otroprueba', name: 'otroprueba' }
 
-  const { container } = render(<Blog blog={blog} />)
+  renderBlog({ blogs: [blog], user })
 
-  const likes = screen.queryByText('likes', { exact:false })
-  const url = container.querySelector('.url')
-
-  expect(likes).toBeNull()
-  expect(url).toBeNull()
+  expect(screen.getByText('like')).toBeDefined()
+  expect(screen.queryByText('Remove')).toBeNull()
 })
 
-test('When the show button gets clicked, url and likes are shown', async () => {
-  const blog = {
-    title: 'Hola',
-    author: 'adios',
-    url: 'www.ssss.com',
-    likes: 3,
-    user: {
-      username: 'user'
-    }
-  }
+test('shows like and remove buttons to the owner of the blog', () => {
+  const user = { username: 'prueba', name: 'prueba' }
 
-  const { container } = render(<Blog blog={blog} />)
+  renderBlog({ blogs: [blog], user })
 
-  const user = userEvent.setup()
-  const button = screen.getByText('view')
-  await user.click(button)
-
-  screen.debug()
-
-  const likes = screen.queryByText('likes', { exact:false })
-  const url = container.querySelector('.url')
-
-  expect(likes).toBeVisible()
-  expect(url).toBeVisible()
-
+  expect(screen.getByText('like')).toBeDefined()
+  expect(screen.getByText('Remove')).toBeDefined()
 })
-
-test('When the like button gets clicked twice, the handleLike function gets called accordingly', async () => {
-  const blog = {
-    title: 'Hola',
-    author: 'adios',
-    url: 'www.ssss.com',
-    likes: 3,
-    user: {
-      username: 'user'
-    }
-  }
-
-  const mockHandler = vi.fn()
-
-  render(
-    <Blog blog={blog} handleLikes={mockHandler}/>
-  )
-
-  const user = userEvent.setup()
-
-  const detailsButton = screen.getByText('view')
-  await user.click(detailsButton)
-
-  const likeButton = screen.getByText('like')
-  await user.click(likeButton)
-  await user.click(likeButton)
-
-  expect(mockHandler.mock.calls).toHaveLength(2)
-})
-

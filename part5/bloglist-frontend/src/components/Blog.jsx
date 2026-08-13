@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 
-const Blog = ({ blog , handleLikes , handleRemoval , user }) => {
+const Blog = ({ blogs , handleLikes , handleRemoval , user }) => {
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -9,10 +9,9 @@ const Blog = ({ blog , handleLikes , handleRemoval , user }) => {
     marginBottom: 5
   }
 
-  const [details,setDetails] = useState(false)
-
-  const toggleDetails = () => setDetails(!details)
-  const buttonText = details ? 'hide' : 'view' //Shows hide when details are shown
+  const id = useParams().id
+  const blog = blogs.find(blog => blog.id === id)
+  const navigate = useNavigate()
 
   const onLike = () => {
     handleLikes(blog.id)
@@ -21,6 +20,7 @@ const Blog = ({ blog , handleLikes , handleRemoval , user }) => {
   const onRemoval = () => {
     window.alert(`Remove blog ${blog.title} by ${blog.author}?`)
     handleRemoval(blog.id)
+    navigate('/')
   }
 
   const isOwner = user && blog.user && user.username === blog.user.username
@@ -28,22 +28,21 @@ const Blog = ({ blog , handleLikes , handleRemoval , user }) => {
   return(
     <div style={blogStyle} className='blog'>
       <div>
-        {blog.title} {blog.author}
-        <button onClick={toggleDetails}>{buttonText}</button>
+        <h2>{blog.title}: {blog.author}</h2>
       </div>
-      {details && (
-        <div>
-          <div className='url'>{blog.url}</div>
-          <div>
-            likes {blog.likes}
-            <button onClick={onLike}>like</button>
-          </div>
-          {isOwner && <button onClick={onRemoval}>Remove</button>}
+      <div>
+        <div className='url'>
+          <a href={blog.url}>{blog.url}</a>
         </div>
-      )}
+        <div className='user'> Added by {blog.user.username} </div>
+        <div>
+            likes {blog.likes}
+          {user && <button onClick={onLike}>like</button>}
+        </div>
+        {isOwner && <button onClick={onRemoval}>Remove</button>}
+      </div>
     </div>
   )
-
 }
 
 export default Blog

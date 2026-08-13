@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 const BlogForm = ({ createBlog }) => {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [url, setUrl] = useState('')
+  const navigate = useNavigate()
 
   const handleSubmit = (event) => {
     event.preventDefault()
@@ -11,10 +13,12 @@ const BlogForm = ({ createBlog }) => {
     setTitle('')
     setAuthor('')
     setUrl('')
+    navigate('/')
   }
 
   return(
     <form onSubmit={handleSubmit}>
+      <h2>create new</h2>
       <div>
         <label>
         title
@@ -39,7 +43,7 @@ const BlogForm = ({ createBlog }) => {
           />
         </label>
       </div>
-      <button type='submit'>send</button>
+      <button type='submit'>create</button>
     </form>
   )
 }

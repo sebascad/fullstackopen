@@ -10,9 +10,9 @@ const LoginForm = ({ handleLogin }) => {
   const handleSubmit = (event) => {
     event.preventDefault()
     handleLogin({ username,password })
-    navigate('/')
     setUsername('')
     setPassword('')
+    navigate('/')
   }
 
 
