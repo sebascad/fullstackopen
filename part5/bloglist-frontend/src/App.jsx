@@ -138,7 +138,8 @@ const App = () => {
           {createNewBlogForm()}
 
           {sortedBlogs.map(blog =>
-            <Blog key={blog.id} blog={blog} handleLikes={handleLikes} handleRemoval={handleRemoval}/>
+            <Blog key={blog.id} blog={blog} handleLikes={handleLikes} handleRemoval={handleRemoval}
+              user={user}/>
           )}
 
         </div>
