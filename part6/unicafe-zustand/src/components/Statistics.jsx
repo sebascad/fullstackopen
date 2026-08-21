@@ -1,10 +1,15 @@
+import { useCounterStore } from "./store"
+
 const Statistics = () => {
-  const good = 0
-  const neutral = 0
-  const bad = 0
-  const all = 0
-  const average = 0
-  const positive = 0
+  const good = useCounterStore(state => state.good)
+  const neutral = useCounterStore(state => state.neutral)
+  const bad = useCounterStore(state => state.bad)
+
+  const all = good + neutral + bad
+
+  const average = all === 0 ? 0 : (good - bad) / all
+
+  const positive = all === 0 ? 0 : (good / all) * 100 
   
   return (
     <div>
