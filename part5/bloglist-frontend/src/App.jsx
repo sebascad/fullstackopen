@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
@@ -14,15 +14,14 @@ import Notification from './components/Notification'
 import LoginForm from './components/LoginForm'
 import BlogForm from './components/BlogForm'
 import Togglable from './components/Togglable'
+import { AppBar, Button, Toolbar } from '@mui/material'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
   const sortedBlogs = [...blogs].sort((a,b) => b.likes - a.likes)
 
   const [user,setUser] = useState(null)
-
-  const [errorMessage, setErrorMessage] = useState(null)
-  const [successMessage, setSuccessMessage] = useState(null)
+  const [notification,setNotification] = useState(null)
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -39,8 +38,6 @@ const App = () => {
     }
   },[])
 
-  const blogFormRef = useRef()
-
   const handleLogin = async ({ username,password }) => {
     try {
       const user = await loginService.login({ username,password })
@@ -53,9 +50,9 @@ const App = () => {
       setUser(user)
     } catch{
       console.log('WRONG CREDENTIALS')
-      setErrorMessage('wrong username or password')
+      setNotification({ text: 'Wrong username or password', type: 'error' })
       setTimeout(() => {
-        setErrorMessage(null)
+        setNotification(null)
       },5000)
     }
   }
@@ -88,15 +85,15 @@ const App = () => {
       const createdBlog = await blogService.create(blog)
       setBlogs(blogs.concat(createdBlog))
 
-      setSuccessMessage(`a new blog ${createdBlog.title} by ${createdBlog.author} added`)
+      setNotification({ text:`A new blog ${createdBlog.title} by ${createdBlog.author} added`, type: 'success' })
       setTimeout(() => {
-        setSuccessMessage(null)
+        setNotification(null)
       },5000)
 
     }catch{
-      setErrorMessage('blog creation failed')
+      setNotification({ text: 'blog creation failed', type: 'error' })
       setTimeout(() => {
-        setErrorMessage(null)
+        setNotification(null)
       },5000)
     }
   }
@@ -130,22 +127,23 @@ const App = () => {
     )
   }
 
-  const padding = {
-    padding: 5
-  }
-
   return (
     <Router>
-      <div>
-        <Link style={padding} to="/">Blogs</Link>
+      <AppBar position='static'>
+        <Toolbar>
+          <h1 style={{ padding: 10 }}>Blog App</h1>
 
-        <Link style={padding} to={'/create'}>new blog </Link>
-        {!user ? (<Link style={padding} to= "/login">Login</Link>) :
-          <button onClick={handleLogout}> Logout </button> }
-      </div>
+          <Button color='inherit' component={Link} to='/'>Blogs</Button>
 
-      <Notification message={errorMessage} type="error" />
-      <Notification message={successMessage} type="success" />
+          {user && <Button color='inherit' component={Link} to='/create'>new blog</Button>}
+
+          {!user ? <Button color='inherit' component={Link} to='/login'>Login</Button> :
+            <Button color='red' onClick={handleLogout}> Logout </Button> }
+
+        </Toolbar>
+      </AppBar>
+
+      <Notification notification={notification} />
 
       <Routes>
         <Route path="/" element = {

@@ -1,3 +1,4 @@
+import { TextField , Button } from '@mui/material'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -17,34 +18,44 @@ const BlogForm = ({ createBlog }) => {
   }
 
   return(
-    <form onSubmit={handleSubmit}>
-      <h2>create new</h2>
-      <div>
-        <label>
-        title
-          <input className='title'
-            type='text' value={title} name='title' onChange={({ target }) => setTitle(target.value)}
+    <div>
+      <h2>Create a new blog</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <TextField
+            label="title"
+            size='small'
+            margin='dense'
+            value={title}
+            onChange={event => setTitle(event.target.value)}
           />
-        </label>
-      </div>
-      <div>
-        <label>
-        author
-          <input className='author'
-            type='text' value={author} name='author' onChange={({ target }) => setAuthor(target.value)}
+        </div>
+        <div>
+          <TextField
+            label="author"
+            size='small'
+            margin='dense'
+            value={author}
+            onChange={event => setAuthor(event.target.value)}
           />
-        </label>
-      </div>
-      <div>
-        <label>
-        url
-          <input className='url'
-            type='text' value={url} name='url' onChange={({ target }) => setUrl(target.value)}
+        </div>
+        <div>
+          <TextField
+            label="url"
+            size='small'
+            margin='dense'
+            value={url}
+            onChange={event => setUrl(event.target.value)}
           />
-        </label>
-      </div>
-      <button type='submit'>create</button>
-    </form>
+        </div>
+
+        <div>
+          <Button type="submit" variant="contained" style={{ marginTop: 10 }}>
+            create
+          </Button>
+        </div>
+      </form>
+    </div>
   )
 }
 

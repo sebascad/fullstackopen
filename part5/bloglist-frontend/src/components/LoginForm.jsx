@@ -1,3 +1,4 @@
+import { Button, TextField } from '@mui/material'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -17,28 +18,34 @@ const LoginForm = ({ handleLogin }) => {
 
 
   return (
-    <div>
-      <h2>Login</h2>
+    <>
+      <h2>Log in to application</h2>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>
-          username
-            <input
-              type='text' value={username} name='Username' onChange={({ target }) => setUsername(target.value)}
-            />
-          </label>
+          <TextField
+            label='username'
+            size='small'
+            margin='dense'
+            value={username}
+            onChange={event => setUsername(event.target.value)}
+          />
         </div>
         <div>
-          <label>
-            password
-            <input
-              type='text' value={password} name='Password' onChange={({ target }) => setPassword(target.value)}
-            />
-          </label>
+          <TextField
+            label='password'
+            size='small'
+            margin='dense'
+            value={password}
+            onChange={event => setPassword(event.target.value)}
+          />
         </div>
-        <button type='submit'>login</button>
+
+        <div>
+          <Button type='submit' variant='contained' style={{ marginTop: 10 }}>login</Button>
+        </div>
+
       </form>
-    </div>
+    </>
   )
 }
 
